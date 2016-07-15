@@ -24,7 +24,7 @@ public class DegreeVertexProgram implements VertexProgram<Double>{
 
     private static final Set<String> COMPUTE_KEYS = new HashSet<>(Arrays.asList(DEGREE));
 
-    private DegreeVertexProgram() {
+    public DegreeVertexProgram() {
 
     }
 
@@ -92,7 +92,7 @@ public class DegreeVertexProgram implements VertexProgram<Double>{
 
     @Override
     public boolean terminate(final Memory memory) {
-        return true;
+        return !memory.isInitialIteration();
     }
 
     @Override

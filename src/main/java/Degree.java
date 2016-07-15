@@ -69,8 +69,9 @@ public class Degree {
         // does page rank work
         try {
 //            ComputerResult result = titanGraph.compute().program(PageRankVertexProgram.build().create(titanGraph)).submit().get();
-            ComputerResult result = titanGraph.compute().program(DegreeVertexProgram).submit().get();
+            ComputerResult result = titanGraph.compute().program(new DegreeVertexProgram()).submit().get();
             result.graph().traversal().V().valueMap().forEachRemaining(System.out::println);
+            result.graph().tx().commit();
         } catch (InterruptedException e) {
             e.printStackTrace();
         } catch (ExecutionException e) {
