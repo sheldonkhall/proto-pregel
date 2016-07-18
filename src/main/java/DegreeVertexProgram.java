@@ -24,18 +24,12 @@ public class DegreeVertexProgram implements VertexProgram<Double>{
 
     private static final Set<String> COMPUTE_KEYS = new HashSet<>(Arrays.asList(DEGREE));
 
-    public DegreeVertexProgram() {
-
-    }
-
     @Override
     public void loadState(final Graph graph, final Configuration configuration) {
-
     }
 
     @Override
     public void storeState(final Configuration configuration) {
-
     }
 
     @Override
@@ -51,11 +45,6 @@ public class DegreeVertexProgram implements VertexProgram<Double>{
     @Override
     public Set<String> getElementComputeKeys() {
         return COMPUTE_KEYS;
-    }
-
-    @Override
-    public Optional<MessageCombiner<Double>> getMessageCombiner() {
-        return (Optional) PageRankMessageCombiner.instance();
     }
 
     @Override

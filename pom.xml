@@ -46,6 +46,7 @@
         <java.version>1.8</java.version>
         <graql-parser.version>0.5.0</graql-parser.version>
         <mindmaps-titan-factory.version>0.4.1</mindmaps-titan-factory.version>
+        <migration.version>0.1.0-SNAPSHOT</migration.version>
     </properties>
 
     <dependencies>
@@ -53,12 +54,33 @@
             <groupId>io.mindmaps.factory</groupId>
             <artifactId>mindmaps-titan-factory</artifactId>
             <version>${mindmaps-titan-factory.version}</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.apache.servicemix.bundles</groupId>
+                    <artifactId>org.apache.servicemix.bundles.commons-csv</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
         <dependency>
             <groupId>io.mindmaps.graql</groupId>
             <artifactId>graql-parser</artifactId>
             <version>${graql-parser.version}</version>
         </dependency>
+        <dependency>
+            <groupId>io.mindmaps.migration</groupId>
+            <artifactId>mindmaps-migration</artifactId>
+            <version>${migration.version}</version>
+        </dependency>
+        <!--<dependency>-->
+            <!--<groupId>org.apache.logging.log4j</groupId>-->
+            <!--<artifactId>log4j-api</artifactId>-->
+            <!--<version>2.6.2</version>-->
+        <!--</dependency>-->
+        <!--<dependency>-->
+            <!--<groupId>org.apache.logging.log4j</groupId>-->
+            <!--<artifactId>log4j-core</artifactId>-->
+            <!--<version>2.6.2</version>-->
+        <!--</dependency>-->
     </dependencies>
 
     <build>
