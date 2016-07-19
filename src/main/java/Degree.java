@@ -18,6 +18,7 @@ import io.mindmaps.migration.csv.CSVDataMigrator;
 import io.mindmaps.migration.csv.CSVSchemaMigrator;
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVParser;
+import org.apache.tinkerpop.gremlin.hadoop.structure.HadoopGraph;
 import org.apache.tinkerpop.gremlin.process.computer.ComputerResult;
 
 import java.io.File;
@@ -31,7 +32,10 @@ import java.util.List;
 import java.util.concurrent.ExecutionException;
 import ch.qos.logback.classic.Level;
 import ch.qos.logback.classic.Logger;
+import org.apache.tinkerpop.gremlin.process.computer.GraphComputer;
 import org.apache.tinkerpop.gremlin.spark.process.computer.SparkGraphComputer;
+import org.apache.tinkerpop.gremlin.structure.Graph;
+import org.apache.tinkerpop.gremlin.structure.util.GraphFactory;
 
 import static io.mindmaps.graql.api.query.QueryBuilder.var;
 import static org.junit.Assert.assertNotNull;
@@ -43,15 +47,16 @@ import static org.junit.Assert.assertNotNull;
 public class Degree {
 //    private final String graphConfig = "/opt/mindmaps/resources/conf/titan-cassandra-es.properties";
 //    private final String graphConfig = "/opt/mindmaps/resources/conf/titan-cassandra-unit-test.properties";
-//    private final String graphConfig = "/opt/mindmaps/resources/conf/titan-cassandra-test-cluster.properties";
-private final String graphConfig = "/opt/mindmaps/resources/conf/titan-cassandra-test-hadoop-cluster.properties";
+    private final String graphConfig = "/opt/mindmaps/resources/conf/titan-cassandra-test-cluster.properties";
+    private final String graphConfigHadoop = "/opt/mindmaps/resources/conf/titan-cassandra-test-hadoop-cluster.properties";
+//    private final String graphConfigHadoop = "/opt/mindmaps/cluster/titan/conf/hadoop-graph/read-cassandra.properties";
     private MindmapsTransaction transaction;
     private MindmapsGraph mindmapsGraph;
 
     public void main() {
         // Disable horrid cassandra logs
         Logger logger = (Logger) org.slf4j.LoggerFactory.getLogger(org.slf4j.Logger.ROOT_LOGGER_NAME);
-        logger.setLevel(Level.INFO);
+        logger.setLevel(Level.DEBUG);
 //        System.out.println("======" + System.currentTimeMillis() + "start initialise graph");
 //        initialiseGraph();
 //        System.out.println("======" + System.currentTimeMillis() + "stop initialise graph");
@@ -142,14 +147,17 @@ private final String graphConfig = "/opt/mindmaps/resources/conf/titan-cassandra
     }
 
     private void computeDegree() {
-        TitanGraph titanGraph = TitanFactory.open(graphConfig);
+//        TitanGraph titanGraph = TitanFactory.open(graphConfig);
+        Graph titanGraph = GraphFactory.open(graphConfigHadoop);
+
+        titanGraph.compute(SparkGraphComputer.class).workers(1).program(new DegreeVertexProgram());
 
         // does page rank work
         try {
             System.out.println("======" + System.currentTimeMillis()/1000 + "(secs) start compute degree");
 //            ComputerResult result = titanGraph.compute().program(PageRankVertexProgram.build().create(titanGraph)).submit().get();
 //            ComputerResult result = titanGraph.compute().program(new DegreeVertexProgram()).submit().get();
-            ComputerResult result = titanGraph.compute().workers(10).program(new DegreeVertexProgram()).submit().get();
+            ComputerResult result = titanGraph.compute(SparkGraphComputer.class).workers(1).program(new DegreeVertexProgram()).submit().get();
             System.out.println("======" + System.currentTimeMillis()/1000 + "(secs) end compute degree");
             System.out.println("======"+System.currentTimeMillis()/1000+"(secs) start print degree");
             result.graph().traversal().V().valueMap().forEachRemaining(System.out::println);

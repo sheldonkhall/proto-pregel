@@ -45,9 +45,9 @@
     <properties>
         <java.version>1.8</java.version>
         <graql-parser.version>0.5.0</graql-parser.version>
-        <mindmaps-titan-factory.version>0.4.1</mindmaps-titan-factory.version>
+        <mindmaps-titan-factory.version>0.5.0-SNAPSHOT</mindmaps-titan-factory.version>
         <migration.version>0.1.0-SNAPSHOT</migration.version>
-        <spark.version>3.2.0-incubating</spark.version>
+        <tinkerpop.version>3.1.1-incubating</tinkerpop.version>
     </properties>
 
     <dependencies>
@@ -75,7 +75,17 @@
         <dependency>
             <groupId>org.apache.tinkerpop</groupId>
             <artifactId>spark-gremlin</artifactId>
-            <version>${spark.version}</version>
+            <version>${tinkerpop.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.tinkerpop</groupId>
+            <artifactId>hadoop-gremlin</artifactId>
+            <version>${tinkerpop.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.thinkaurelius.titan</groupId>
+            <artifactId>titan-hadoop</artifactId>
+            <version>1.1.0-SNAPSHOT</version>
         </dependency>
     </dependencies>
 
