@@ -31,6 +31,7 @@ import java.util.List;
 import java.util.concurrent.ExecutionException;
 import ch.qos.logback.classic.Level;
 import ch.qos.logback.classic.Logger;
+import org.apache.tinkerpop.gremlin.spark.process.computer.SparkGraphComputer;
 
 import static io.mindmaps.graql.api.query.QueryBuilder.var;
 import static org.junit.Assert.assertNotNull;
@@ -42,7 +43,8 @@ import static org.junit.Assert.assertNotNull;
 public class Degree {
 //    private final String graphConfig = "/opt/mindmaps/resources/conf/titan-cassandra-es.properties";
 //    private final String graphConfig = "/opt/mindmaps/resources/conf/titan-cassandra-unit-test.properties";
-    private final String graphConfig = "/opt/mindmaps/resources/conf/titan-cassandra-test-cluster.properties";
+//    private final String graphConfig = "/opt/mindmaps/resources/conf/titan-cassandra-test-cluster.properties";
+private final String graphConfig = "/opt/mindmaps/resources/conf/titan-cassandra-test-hadoop-cluster.properties";
     private MindmapsTransaction transaction;
     private MindmapsGraph mindmapsGraph;
 
@@ -50,15 +52,15 @@ public class Degree {
         // Disable horrid cassandra logs
         Logger logger = (Logger) org.slf4j.LoggerFactory.getLogger(org.slf4j.Logger.ROOT_LOGGER_NAME);
         logger.setLevel(Level.INFO);
-        System.out.println("======" + System.currentTimeMillis() + "start initialise graph");
-        initialiseGraph();
-        System.out.println("======" + System.currentTimeMillis() + "stop initialise graph");
+//        System.out.println("======" + System.currentTimeMillis() + "start initialise graph");
+//        initialiseGraph();
+//        System.out.println("======" + System.currentTimeMillis() + "stop initialise graph");
 //        System.out.println("======" + System.currentTimeMillis() + "start load pokemon");
 //        loadPokemon();
 //        System.out.println("======" + System.currentTimeMillis() + "stop load pokemon");
-        System.out.println("======" + System.currentTimeMillis() + "start load icij");
-        loadICIJ();
-        System.out.println("======" + System.currentTimeMillis() + "stop load icij");
+//        System.out.println("======" + System.currentTimeMillis() + "start load icij");
+//        loadICIJ();
+//        System.out.println("======" + System.currentTimeMillis() + "stop load icij");
         computeDegree();
     }
 
@@ -103,17 +105,17 @@ public class Degree {
         schemamigrator.migrateSchema("entity", createCSV("/opt/mindmaps/icij-data/Entities.csv"));
         datamigrator.migrateData("entity", createCSV("/opt/mindmaps/icij-data/Entities.csv"));
 
-        // test an address
-        schemamigrator.migrateSchema("address", createCSV("/opt/mindmaps/icij-data/Addresses.csv"));
-        datamigrator.migrateData("address", createCSV("/opt/mindmaps/icij-data/Addresses.csv"));
-
-        // test an officer
-        schemamigrator.migrateSchema("officer", createCSV("/opt/mindmaps/icij-data/Officers.csv"));
-        datamigrator.migrateData("officer", createCSV("/opt/mindmaps/icij-data/Officers.csv"));
-
-        // test an intermediary
-        schemamigrator.migrateSchema("intermediary", createCSV("/opt/mindmaps/icij-data/Intermediaries.csv"));
-        datamigrator.migrateData("intermediary", createCSV("/opt/mindmaps/icij-data/Intermediaries.csv"));
+//        // test an address
+//        schemamigrator.migrateSchema("address", createCSV("/opt/mindmaps/icij-data/Addresses.csv"));
+//        datamigrator.migrateData("address", createCSV("/opt/mindmaps/icij-data/Addresses.csv"));
+//
+//        // test an officer
+//        schemamigrator.migrateSchema("officer", createCSV("/opt/mindmaps/icij-data/Officers.csv"));
+//        datamigrator.migrateData("officer", createCSV("/opt/mindmaps/icij-data/Officers.csv"));
+//
+//        // test an intermediary
+//        schemamigrator.migrateSchema("intermediary", createCSV("/opt/mindmaps/icij-data/Intermediaries.csv"));
+//        datamigrator.migrateData("intermediary", createCSV("/opt/mindmaps/icij-data/Intermediaries.csv"));
 
         try {
             transaction.commit();
@@ -147,7 +149,7 @@ public class Degree {
             System.out.println("======" + System.currentTimeMillis()/1000 + "(secs) start compute degree");
 //            ComputerResult result = titanGraph.compute().program(PageRankVertexProgram.build().create(titanGraph)).submit().get();
 //            ComputerResult result = titanGraph.compute().program(new DegreeVertexProgram()).submit().get();
-            ComputerResult result = titanGraph.compute().workers(20).program(new DegreeVertexProgram()).submit().get();
+            ComputerResult result = titanGraph.compute().workers(10).program(new DegreeVertexProgram()).submit().get();
             System.out.println("======" + System.currentTimeMillis()/1000 + "(secs) end compute degree");
             System.out.println("======"+System.currentTimeMillis()/1000+"(secs) start print degree");
             result.graph().traversal().V().valueMap().forEachRemaining(System.out::println);
