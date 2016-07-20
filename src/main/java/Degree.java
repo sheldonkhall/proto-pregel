@@ -16,6 +16,7 @@ import io.mindmaps.graql.api.query.QueryBuilder;
 import io.mindmaps.migration.TransactionManager;
 import io.mindmaps.migration.csv.CSVDataMigrator;
 import io.mindmaps.migration.csv.CSVSchemaMigrator;
+import org.apache.commons.configuration.ConfigurationException;
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVParser;
 import org.apache.tinkerpop.gremlin.hadoop.structure.HadoopGraph;
@@ -30,9 +31,12 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
+
 import ch.qos.logback.classic.Level;
 import ch.qos.logback.classic.Logger;
 import org.apache.tinkerpop.gremlin.process.computer.GraphComputer;
+import org.apache.tinkerpop.gremlin.process.computer.ranking.pagerank.PageRankVertexProgram;
 import org.apache.tinkerpop.gremlin.spark.process.computer.SparkGraphComputer;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.util.GraphFactory;
@@ -66,7 +70,10 @@ public class Degree {
 //        System.out.println("======" + System.currentTimeMillis() + "start load icij");
 //        loadICIJ();
 //        System.out.println("======" + System.currentTimeMillis() + "stop load icij");
-        computeDegree();
+
+//        computeDegree();
+
+        computeCluster();
     }
 
     private void initialiseGraph() {
@@ -150,14 +157,12 @@ public class Degree {
 //        TitanGraph titanGraph = TitanFactory.open(graphConfig);
         Graph titanGraph = GraphFactory.open(graphConfigHadoop);
 
-        titanGraph.compute(SparkGraphComputer.class).workers(1).program(new DegreeVertexProgram());
-
-        // does page rank work
+        // test vertex program
         try {
             System.out.println("======" + System.currentTimeMillis()/1000 + "(secs) start compute degree");
 //            ComputerResult result = titanGraph.compute().program(PageRankVertexProgram.build().create(titanGraph)).submit().get();
 //            ComputerResult result = titanGraph.compute().program(new DegreeVertexProgram()).submit().get();
-            ComputerResult result = titanGraph.compute(SparkGraphComputer.class).workers(1).program(new DegreeVertexProgram()).submit().get();
+            ComputerResult result = titanGraph.compute(SparkGraphComputer.class).workers(20).program(new DegreeVertexProgram()).submit().get();
             System.out.println("======" + System.currentTimeMillis()/1000 + "(secs) end compute degree");
             System.out.println("======"+System.currentTimeMillis()/1000+"(secs) start print degree");
             result.graph().traversal().V().valueMap().forEachRemaining(System.out::println);
@@ -165,6 +170,22 @@ public class Degree {
             System.out.println("======" + System.currentTimeMillis()/1000 + "start commit");
             result.graph().tx().commit();
             System.out.println("======" + System.currentTimeMillis()/1000 + "end commit");
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        } catch (ExecutionException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void computeCluster() {
+        // get the hadoop graph
+        Graph hadoopGraph = GraphFactory.open(graphConfigHadoop);
+
+        try {
+            ComputerResult result = hadoopGraph.compute(SparkGraphComputer.class)
+                    .program(PageRankVertexProgram.build().create(hadoopGraph))
+                    .submit().get();
+            System.out.println("The number of vertices in the graph is: " + result.graph().traversal().V().count());
         } catch (InterruptedException e) {
             e.printStackTrace();
         } catch (ExecutionException e) {
