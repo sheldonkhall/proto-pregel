@@ -49,10 +49,9 @@ import static org.junit.Assert.assertNotNull;
  */
 
 public class Degree {
-//    private final String graphConfig = "/opt/mindmaps/resources/conf/titan-cassandra-es.properties";
 //    private final String graphConfig = "/opt/mindmaps/resources/conf/titan-cassandra-unit-test.properties";
-    private final String graphConfig = "/opt/mindmaps/resources/conf/titan-cassandra-test-cluster.properties";
-    private final String graphConfigHadoop = "/opt/mindmaps/resources/conf/titan-cassandra-test-hadoop-cluster.properties";
+    private final String graphConfig = "src/main/resources/graphs/titan-cassandra-test-cluster.properties";
+    private final String graphConfigHadoop = "src/main/resources/graphs/titan-cassandra-test-hadoop-cluster.properties";
 //    private final String graphConfigHadoop = "/opt/mindmaps/cluster/titan/conf/hadoop-graph/read-cassandra.properties";
     private MindmapsTransaction transaction;
     private MindmapsGraph mindmapsGraph;
@@ -180,16 +179,17 @@ public class Degree {
     private void computeCluster() {
         // get the hadoop graph
         Graph hadoopGraph = GraphFactory.open(graphConfigHadoop);
+        System.out.println("The number of vertices in the graph is: " + hadoopGraph.traversal().V().count().next().toString());
 
-        try {
-            ComputerResult result = hadoopGraph.compute(SparkGraphComputer.class)
-                    .program(PageRankVertexProgram.build().create(hadoopGraph))
-                    .submit().get();
-            System.out.println("The number of vertices in the graph is: " + result.graph().traversal().V().count());
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        } catch (ExecutionException e) {
-            e.printStackTrace();
-        }
+//        try {
+//            ComputerResult result = hadoopGraph.compute(SparkGraphComputer.class)
+//                    .program(PageRankVertexProgram.build().create(hadoopGraph))
+//                    .submit().get();
+//            System.out.println("The number of vertices in the graph is: " + result.graph().traversal().V().count());
+//        } catch (InterruptedException e) {
+//            e.printStackTrace();
+//        } catch (ExecutionException e) {
+//            e.printStackTrace();
+//        }
     }
 }
