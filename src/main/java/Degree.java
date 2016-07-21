@@ -61,7 +61,7 @@ public class Degree {
     public void main() {
         // Disable horrid cassandra logs
         Logger logger = (Logger) org.slf4j.LoggerFactory.getLogger(org.slf4j.Logger.ROOT_LOGGER_NAME);
-        logger.setLevel(Level.DEBUG);
+        logger.setLevel(Level.INFO);
 //        System.out.println("======" + System.currentTimeMillis() + "start initialise graph");
 //        initialiseGraph();
 //        System.out.println("======" + System.currentTimeMillis() + "stop initialise graph");
@@ -161,16 +161,16 @@ public class Degree {
         // test vertex program
         try {
             System.out.println("======" + System.currentTimeMillis()/1000 + "(secs) start compute degree");
-//            ComputerResult result = titanGraph.compute().program(PageRankVertexProgram.build().create(titanGraph)).submit().get();
+            ComputerResult result = titanGraph.compute(SparkGraphComputer.class).program(PageRankVertexProgram.build().create(titanGraph)).submit().get();
 //            ComputerResult result = titanGraph.compute().program(new DegreeVertexProgram()).submit().get();
-            ComputerResult result = titanGraph.compute(SparkGraphComputer.class).workers(20).program(new DegreeVertexProgram()).submit().get();
+//            ComputerResult result = titanGraph.compute(SparkGraphComputer.class).program(new DegreeVertexProgram()).submit().get();
             System.out.println("======" + System.currentTimeMillis()/1000 + "(secs) end compute degree");
             System.out.println("======"+System.currentTimeMillis()/1000+"(secs) start print degree");
             result.graph().traversal().V().valueMap().forEachRemaining(System.out::println);
             System.out.println("======"+System.currentTimeMillis()/1000+"(secs) stop print degree");
-            System.out.println("======" + System.currentTimeMillis()/1000 + "start commit");
-            result.graph().tx().commit();
-            System.out.println("======" + System.currentTimeMillis()/1000 + "end commit");
+//            System.out.println("======" + System.currentTimeMillis()/1000 + "start commit");
+//            result.graph().tx().commit();
+//            System.out.println("======" + System.currentTimeMillis()/1000 + "end commit");
         } catch (InterruptedException e) {
             e.printStackTrace();
         } catch (ExecutionException e) {

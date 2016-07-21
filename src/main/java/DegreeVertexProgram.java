@@ -75,7 +75,7 @@ public class DegreeVertexProgram implements VertexProgram<Double>{
             messenger.sendMessage(this.countMessageScope, 1.0d);
         } else {
             double edgeCount = IteratorUtils.reduce(messenger.receiveMessages(), 0.0d, (a, b) -> a + b);
-//            vertex.property(DEGREE, edgeCount);
+            vertex.property(DEGREE, edgeCount);
         }
     }
 
