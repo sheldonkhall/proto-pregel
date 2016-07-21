@@ -37,6 +37,8 @@ import ch.qos.logback.classic.Level;
 import ch.qos.logback.classic.Logger;
 import org.apache.tinkerpop.gremlin.process.computer.GraphComputer;
 import org.apache.tinkerpop.gremlin.process.computer.ranking.pagerank.PageRankVertexProgram;
+import org.apache.tinkerpop.gremlin.process.traversal.TraversalEngine;
+import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
 import org.apache.tinkerpop.gremlin.spark.process.computer.SparkGraphComputer;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.util.GraphFactory;
@@ -179,7 +181,9 @@ public class Degree {
     private void computeCluster() {
         // get the hadoop graph
         Graph hadoopGraph = GraphFactory.open(graphConfigHadoop);
-        System.out.println("The number of vertices in the graph is: " + hadoopGraph.traversal().V().count().next().toString());
+        System.out.println("The number of vertices in the graph is: " +
+                hadoopGraph.traversal(GraphTraversalSource.computer(SparkGraphComputer.class))
+                        .V().count().next().toString());
 
 //        try {
 //            ComputerResult result = hadoopGraph.compute(SparkGraphComputer.class)
