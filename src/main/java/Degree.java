@@ -1,6 +1,7 @@
 
 import com.thinkaurelius.titan.core.TitanFactory;
 import com.thinkaurelius.titan.core.TitanGraph;
+import com.thinkaurelius.titan.graphdb.olap.computer.FulgoraGraphComputer;
 import io.mindmaps.core.dao.MindmapsGraph;
 import io.mindmaps.core.dao.MindmapsTransaction;
 import io.mindmaps.core.exceptions.MindmapsValidationException;
@@ -41,6 +42,8 @@ import org.apache.tinkerpop.gremlin.process.traversal.TraversalEngine;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
 import org.apache.tinkerpop.gremlin.spark.process.computer.SparkGraphComputer;
 import org.apache.tinkerpop.gremlin.structure.Graph;
+import org.apache.tinkerpop.gremlin.structure.T;
+import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.util.GraphFactory;
 
 import static io.mindmaps.graql.api.query.QueryBuilder.var;
@@ -74,7 +77,8 @@ public class Degree {
 
 //        computeDegree();
 
-        computeCluster();
+//        computeCluster();
+        strippedDown();
     }
 
     private void initialiseGraph() {
@@ -180,7 +184,7 @@ public class Degree {
 
     private void computeCluster() {
         // get the hadoop graph
-        Graph hadoopGraph = GraphFactory.open(graphConfigHadoop);
+        Graph hadoopGraph = TitanFactory.open(graphConfigHadoop);
         System.out.println("The number of vertices in the graph is: " +
                 hadoopGraph.traversal(GraphTraversalSource.computer(SparkGraphComputer.class))
                         .V().count().next().toString());
@@ -195,5 +199,49 @@ public class Degree {
 //        } catch (ExecutionException e) {
 //            e.printStackTrace();
 //        }
+    }
+
+    private void strippedDown() {
+        // a normal titan cluster
+        String titanClusterConfig = "src/main/resources/graphs/titan-cassandra-test-cluster.properties";
+
+        // a hadoop graph with cassandra as input and gryo as output
+        String sparkClusterConfig = "src/main/resources/graphs/titan-cassandra-test-spark.properties";
+
+        String edgeLabel = "blank";
+
+        // add a graph
+        int n = 100;
+        Graph titanGraph = GraphFactory.open(titanClusterConfig);
+        Vertex superNode = titanGraph.addVertex(T.label, String.valueOf(0));
+        for (int i=1;i<n;i++) {
+            Vertex currentNode = titanGraph.addVertex(T.label, String.valueOf(i));
+            currentNode.addEdge(edgeLabel,superNode);
+        }
+        titanGraph.tx().commit();
+
+        //count with titan
+        Long count = titanGraph.traversal().V().count().next();
+        System.out.println("The number of vertices in the graph is: "+count);
+
+        // count the graph using titan graph computer
+        count = titanGraph.traversal(GraphTraversalSource.computer(FulgoraGraphComputer.class)).V().count().next();
+        System.out.println("The number of vertices in the graph is: "+count);
+
+        // count the graph using spark graph computer
+        Graph sparkGraph = GraphFactory.open(sparkClusterConfig);
+//        count = sparkGraph.traversal(GraphTraversalSource.computer(SparkGraphComputer.class)).V().count().next();
+//        System.out.println("The number of vertices in the graph is: "+count);
+
+        // try to compute page rank
+        ComputerResult result = null;
+        try {
+            result = sparkGraph.compute(SparkGraphComputer.class).program(PageRankVertexProgram.build().create(sparkGraph)).submit().get();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        } catch (ExecutionException e) {
+            e.printStackTrace();
+        }
+        result.graph().traversal().V().valueMap().forEachRemaining(System.out::println);
     }
 }
