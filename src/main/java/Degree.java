@@ -230,18 +230,7 @@ public class Degree {
 
         // count the graph using spark graph computer
         Graph sparkGraph = GraphFactory.open(sparkClusterConfig);
-//        count = sparkGraph.traversal(GraphTraversalSource.computer(SparkGraphComputer.class)).V().count().next();
-//        System.out.println("The number of vertices in the graph is: "+count);
-
-        // try to compute page rank
-        ComputerResult result = null;
-        try {
-            result = sparkGraph.compute(SparkGraphComputer.class).program(PageRankVertexProgram.build().create(sparkGraph)).submit().get();
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        } catch (ExecutionException e) {
-            e.printStackTrace();
-        }
-        result.graph().traversal().V().valueMap().forEachRemaining(System.out::println);
+        count = sparkGraph.traversal(GraphTraversalSource.computer(SparkGraphComputer.class)).V().count().next();
+        System.out.println("The number of vertices in the graph is: "+count);
     }
 }
