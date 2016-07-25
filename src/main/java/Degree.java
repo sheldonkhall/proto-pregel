@@ -1,6 +1,7 @@
 
 import com.thinkaurelius.titan.core.TitanFactory;
 import com.thinkaurelius.titan.core.TitanGraph;
+import com.thinkaurelius.titan.core.util.TitanCleanup;
 import com.thinkaurelius.titan.graphdb.olap.computer.FulgoraGraphComputer;
 import io.mindmaps.core.dao.MindmapsGraph;
 import io.mindmaps.core.dao.MindmapsTransaction;
@@ -212,7 +213,7 @@ public class Degree {
 
         // add a graph
         int n = 100;
-        Graph titanGraph = GraphFactory.open(titanClusterConfig);
+        TitanGraph titanGraph = TitanFactory.open(titanClusterConfig);
         Vertex superNode = titanGraph.addVertex(T.label, String.valueOf(0));
         for (int i=1;i<n;i++) {
             Vertex currentNode = titanGraph.addVertex(T.label, String.valueOf(i));
@@ -232,5 +233,9 @@ public class Degree {
         Graph sparkGraph = GraphFactory.open(sparkClusterConfig);
         count = sparkGraph.traversal(GraphTraversalSource.computer(SparkGraphComputer.class)).V().count().next();
         System.out.println("The number of vertices in the graph is: "+count);
+
+        // clear the graph
+        titanGraph.close();
+        TitanCleanup.clear(titanGraph);
     }
 }

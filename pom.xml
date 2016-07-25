@@ -81,7 +81,18 @@
             <groupId>org.apache.tinkerpop</groupId>
             <artifactId>hadoop-gremlin</artifactId>
             <version>${tinkerpop.version}</version>
+            <!--<exclusions>-->
+                <!--<exclusion>-->
+                    <!--<groupId>org.apache.spark</groupId>-->
+                    <!--<artifactId>spark-core_2.10</artifactId>-->
+                <!--</exclusion>-->
+            <!--</exclusions>-->
         </dependency>
+        <!--<dependency>-->
+            <!--<groupId>org.apache.spark</groupId>-->
+            <!--<artifactId>spark-core_2.10</artifactId>-->
+            <!--<version>1.6.1</version>-->
+        <!--</dependency>-->
         <dependency>
             <groupId>com.thinkaurelius.titan</groupId>
             <artifactId>titan-hadoop</artifactId>
