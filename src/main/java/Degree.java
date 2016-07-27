@@ -66,12 +66,12 @@ public class Degree {
         // Disable horrid cassandra logs
         Logger logger = (Logger) org.slf4j.LoggerFactory.getLogger(org.slf4j.Logger.ROOT_LOGGER_NAME);
         logger.setLevel(Level.INFO);
-//        System.out.println("======" + System.currentTimeMillis() + "start initialise graph");
-//        initialiseGraph();
-//        System.out.println("======" + System.currentTimeMillis() + "stop initialise graph");
-//        System.out.println("======" + System.currentTimeMillis() + "start load pokemon");
-//        loadPokemon();
-//        System.out.println("======" + System.currentTimeMillis() + "stop load pokemon");
+        System.out.println("======" + System.currentTimeMillis() + "start initialise graph");
+        initialiseGraph();
+        System.out.println("======" + System.currentTimeMillis() + "stop initialise graph");
+        System.out.println("======" + System.currentTimeMillis() + "start load pokemon");
+        loadPokemon();
+        System.out.println("======" + System.currentTimeMillis() + "stop load pokemon");
 //        System.out.println("======" + System.currentTimeMillis() + "start load icij");
 //        loadICIJ();
 //        System.out.println("======" + System.currentTimeMillis() + "stop load icij");
@@ -209,17 +209,17 @@ public class Degree {
         // a hadoop graph with cassandra as input and gryo as output
         String sparkClusterConfig = "src/main/resources/graphs/titan-cassandra-test-spark.properties";
 
-        String edgeLabel = "blank";
-
-        // add a graph
-        int n = 100;
+//        String edgeLabel = "blank";
+//
+//        // add a graph
+//        int n = 100;
         TitanGraph titanGraph = TitanFactory.open(titanClusterConfig);
-        Vertex superNode = titanGraph.addVertex(T.label, String.valueOf(0));
-        for (int i=1;i<n;i++) {
-            Vertex currentNode = titanGraph.addVertex(T.label, String.valueOf(i));
-            currentNode.addEdge(edgeLabel,superNode);
-        }
-        titanGraph.tx().commit();
+//        Vertex superNode = titanGraph.addVertex(T.label, String.valueOf(0));
+//        for (int i=1;i<n;i++) {
+//            Vertex currentNode = titanGraph.addVertex(T.label, String.valueOf(i));
+//            currentNode.addEdge(edgeLabel,superNode);
+//        }
+//        titanGraph.tx().commit();
 
         //count with titan
         Long count = titanGraph.traversal().V().count().next();
@@ -229,10 +229,34 @@ public class Degree {
         count = titanGraph.traversal(GraphTraversalSource.computer(FulgoraGraphComputer.class)).V().count().next();
         System.out.println("The number of vertices in the graph is: "+count);
 
+        try {
+            ComputerResult result = titanGraph.compute()
+                    .program(PageRankVertexProgram.build().create(titanGraph))
+                    .submit().get();
+            System.out.println("The number of vertices in the graph is: " + result.graph().traversal().V().count().next());
+            result.graph().traversal().V().forEachRemaining(v -> v.values().forEachRemaining(System.out::println));
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        } catch (ExecutionException e) {
+            e.printStackTrace();
+        }
+
         // count the graph using spark graph computer
         Graph sparkGraph = GraphFactory.open(sparkClusterConfig);
-        count = sparkGraph.traversal(GraphTraversalSource.computer(SparkGraphComputer.class)).V().count().next();
-        System.out.println("The number of vertices in the graph is: "+count);
+//        count = sparkGraph.traversal(GraphTraversalSource.computer(SparkGraphComputer.class)).V().count().next();
+//        System.out.println("The number of vertices in the graph is: "+count);
+
+//        try {
+//            ComputerResult result = sparkGraph.compute(SparkGraphComputer.class)
+//                    .program(PageRankVertexProgram.build().create(sparkGraph))
+//                    .submit().get();
+//            System.out.println("The number of vertices in the graph is: " + result.graph().traversal().V().count().next());
+//            result.graph().traversal().V().forEachRemaining(v -> v.values().forEachRemaining(System.out::println));
+//        } catch (InterruptedException e) {
+//            e.printStackTrace();
+//        } catch (ExecutionException e) {
+//            e.printStackTrace();
+//        }
 
         // clear the graph
         titanGraph.close();
