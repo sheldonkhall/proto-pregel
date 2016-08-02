@@ -40,7 +40,9 @@ import ch.qos.logback.classic.Logger;
 import org.apache.tinkerpop.gremlin.process.computer.GraphComputer;
 import org.apache.tinkerpop.gremlin.process.computer.ranking.pagerank.PageRankVertexProgram;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalEngine;
+import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
+import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.SubgraphStrategy;
 import org.apache.tinkerpop.gremlin.spark.process.computer.SparkGraphComputer;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.T;
@@ -215,20 +217,20 @@ public class Degree {
         String edgeLabel = "blank";
         int n = 10;
         TitanGraph titanGraph = TitanFactory.open(titanClusterConfig);
-        Vertex superNode = titanGraph.addVertex(T.label, String.valueOf(0));
-        for (int i=1;i<n;i++) {
-            Vertex currentNode = titanGraph.addVertex(T.label, String.valueOf(i));
-            currentNode.addEdge(edgeLabel,superNode);
-        }
-        titanGraph.tx().commit();
+//        Vertex superNode = titanGraph.addVertex(T.label, String.valueOf(0));
+//        for (int i=1;i<n;i++) {
+//            Vertex currentNode = titanGraph.addVertex(T.label, String.valueOf(i));
+//            currentNode.addEdge(edgeLabel,superNode);
+//        }
+//        titanGraph.tx().commit();
 
         //count with titan
-        count = titanGraph.traversal().V().count().next();
-        System.out.println("The number of vertices in the graph according to gremlin is: "+count);
+//        count = titanGraph.traversal().V().count().next();
+//        System.out.println("The number of vertices in the graph according to gremlin is: "+count);
 
         // count the graph using titan graph computer
-        count = titanGraph.traversal(GraphTraversalSource.computer(FulgoraGraphComputer.class)).V().count().next();
-        System.out.println("The number of vertices in the graph according to fulgora is: "+count);
+//        count = titanGraph.traversal(GraphTraversalSource.computer(FulgoraGraphComputer.class)).V().count().next();
+//        System.out.println("The number of vertices in the graph according to fulgora is: "+count);
 
 //        // page rank
 //        try {
@@ -262,6 +264,8 @@ public class Degree {
         count = sparkGraph.traversal(GraphTraversalSource.computer(SparkGraphComputer.class)).V().count().next();
         System.out.println("The number of vertices in the graph according to spark is: "+count);
 
+        sparkGraph.traversal(GraphTraversalSource.build().with(SubgraphStrategy.build().create()));
+
 
 //        // page rank
 //        try {
@@ -291,6 +295,6 @@ public class Degree {
 
         // clear the graph
         titanGraph.close();
-        TitanCleanup.clear(titanGraph);
+//        TitanCleanup.clear(titanGraph);
     }
 }
