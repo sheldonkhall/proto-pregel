@@ -264,21 +264,18 @@ public class Degree {
         count = sparkGraph.traversal(GraphTraversalSource.computer(SparkGraphComputer.class)).V().count().next();
         System.out.println("The number of vertices in the graph according to spark is: "+count);
 
-        sparkGraph.traversal(GraphTraversalSource.build().with(SubgraphStrategy.build().create()));
-
-
-        // page rank
-        try {
-            ComputerResult result = sparkGraph.compute(SparkGraphComputer.class)
-                    .program(PageRankVertexProgram.build().create(sparkGraph))
-                    .submit().get();
-            System.out.println("The number of vertices in the graph is: " + result.graph().traversal().V().count().next());
-            result.graph().traversal().V().forEachRemaining(v -> v.values().forEachRemaining(System.out::println));
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        } catch (ExecutionException e) {
-            e.printStackTrace();
-        }
+//        // page rank
+//        try {
+//            ComputerResult result = sparkGraph.compute(SparkGraphComputer.class)
+//                    .program(PageRankVertexProgram.build().create(sparkGraph))
+//                    .submit().get();
+//            System.out.println("The number of vertices in the graph is: " + result.graph().traversal().V().count().next());
+//            result.graph().traversal().V().forEachRemaining(v -> v.values().forEachRemaining(System.out::println));
+//        } catch (InterruptedException e) {
+//            e.printStackTrace();
+//        } catch (ExecutionException e) {
+//            e.printStackTrace();
+//        }
 
 //        // degree vertex
 //        try {
