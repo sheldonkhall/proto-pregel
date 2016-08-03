@@ -22,9 +22,9 @@ public class NoCoreAPI {
 class Computer {
 
     /**
-     * constructor creates the computer from the mindmaps graph
+     * constructor creates the computer from the mindmaps graph, and an optional set of types to specify a subgraph
      */
-    public Computer (MindmapsGraph graph) {
+    public Computer (MindmapsGraph graph, Set<Type> types) {
         NoCoreAPI.getTraversalSource();
     }
 

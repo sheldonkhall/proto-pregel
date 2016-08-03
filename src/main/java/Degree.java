@@ -57,10 +57,10 @@ import static org.junit.Assert.assertNotNull;
  */
 
 public class Degree {
-//    private final String graphConfig = "/opt/mindmaps/resources/conf/titan-cassandra-unit-test.properties";
-    private final String graphConfig = "src/main/resources/graphs/titan-cassandra-test-cluster.properties";
-    private final String graphConfigHadoop = "src/main/resources/graphs/titan-cassandra-test-hadoop-cluster.properties";
-//    private final String graphConfigHadoop = "/opt/mindmaps/cluster/titan/conf/hadoop-graph/read-cassandra.properties";
+    // a normal titan cluster
+    private String titanClusterConfig = "src/main/resources/graphs/titan-cassandra-test-cluster.properties";
+    // a hadoop graph with cassandra as input and gryo as output
+    private String sparkClusterConfig = "src/main/resources/graphs/titan-cassandra-test-spark.properties";
     private MindmapsTransaction transaction;
     private MindmapsGraph mindmapsGraph;
 
@@ -68,25 +68,23 @@ public class Degree {
         // Disable horrid cassandra logs
         Logger logger = (Logger) org.slf4j.LoggerFactory.getLogger(org.slf4j.Logger.ROOT_LOGGER_NAME);
         logger.setLevel(Level.INFO);
-//        System.out.println("======" + System.currentTimeMillis() + "start initialise graph");
-//        initialiseGraph();
-//        System.out.println("======" + System.currentTimeMillis() + "stop initialise graph");
-//        System.out.println("======" + System.currentTimeMillis() + "start load pokemon");
-//        loadPokemon();
-//        System.out.println("======" + System.currentTimeMillis() + "stop load pokemon");
+        System.out.println("======" + System.currentTimeMillis() + "start initialise graph");
+        initialiseGraph();
+        System.out.println("======" + System.currentTimeMillis() + "stop initialise graph");
+        System.out.println("======" + System.currentTimeMillis() + "start load pokemon");
+        loadPokemon();
+        System.out.println("======" + System.currentTimeMillis() + "stop load pokemon");
 //        System.out.println("======" + System.currentTimeMillis() + "start load icij");
 //        loadICIJ();
 //        System.out.println("======" + System.currentTimeMillis() + "stop load icij");
 
-//        computeDegree();
+        computeDegree();
 
-//        computeCluster();
         strippedDown();
     }
 
     private void initialiseGraph() {
-        mindmapsGraph = MindmapsTitanGraphFactory.getInstance().newGraph(graphConfig);
-//        mindmapsGraph = MindmapsTinkerGraphFactory.getInstance().newGraph();
+        mindmapsGraph = MindmapsTitanGraphFactory.getInstance().newGraph(titanClusterConfig);
         transaction = mindmapsGraph.newTransaction();
         transaction.clearGraph();
         try {
@@ -162,22 +160,18 @@ public class Degree {
     }
 
     private void computeDegree() {
-//        TitanGraph titanGraph = TitanFactory.open(graphConfig);
-        Graph titanGraph = GraphFactory.open(graphConfigHadoop);
+//        TitanGraph graph = TitanFactory.open(titanClusterConfig);
+        Graph graph = GraphFactory.open(sparkClusterConfig);
 
         // test vertex program
         try {
             System.out.println("======" + System.currentTimeMillis()/1000 + "(secs) start compute degree");
-            ComputerResult result = titanGraph.compute(SparkGraphComputer.class).program(PageRankVertexProgram.build().create(titanGraph)).submit().get();
-//            ComputerResult result = titanGraph.compute().program(new DegreeVertexProgram()).submit().get();
-//            ComputerResult result = titanGraph.compute(SparkGraphComputer.class).program(new DegreeVertexProgram()).submit().get();
+//            ComputerResult result = graph.compute().program(new DegreeVertexProgram()).submit().get();
+            ComputerResult result = graph.compute(SparkGraphComputer.class).program(new DegreeVertexProgram()).submit().get();
             System.out.println("======" + System.currentTimeMillis()/1000 + "(secs) end compute degree");
             System.out.println("======"+System.currentTimeMillis()/1000+"(secs) start print degree");
             result.graph().traversal().V().valueMap().forEachRemaining(System.out::println);
             System.out.println("======"+System.currentTimeMillis()/1000+"(secs) stop print degree");
-//            System.out.println("======" + System.currentTimeMillis()/1000 + "start commit");
-//            result.graph().tx().commit();
-//            System.out.println("======" + System.currentTimeMillis()/1000 + "end commit");
         } catch (InterruptedException e) {
             e.printStackTrace();
         } catch (ExecutionException e) {
@@ -185,38 +179,13 @@ public class Degree {
         }
     }
 
-    private void computeCluster() {
-        // get the hadoop graph
-        Graph hadoopGraph = TitanFactory.open(graphConfigHadoop);
-        System.out.println("The number of vertices in the graph is: " +
-                hadoopGraph.traversal(GraphTraversalSource.computer(SparkGraphComputer.class))
-                        .V().count().next().toString());
-
-//        try {
-//            ComputerResult result = hadoopGraph.compute(SparkGraphComputer.class)
-//                    .program(PageRankVertexProgram.build().create(hadoopGraph))
-//                    .submit().get();
-//            System.out.println("The number of vertices in the graph is: " + result.graph().traversal().V().count());
-//        } catch (InterruptedException e) {
-//            e.printStackTrace();
-//        } catch (ExecutionException e) {
-//            e.printStackTrace();
-//        }
-    }
-
     private void strippedDown() {
         Long count;
-
-        // a normal titan cluster
-        String titanClusterConfig = "src/main/resources/graphs/titan-cassandra-test-cluster.properties";
-
-        // a hadoop graph with cassandra as input and gryo as output
-        String sparkClusterConfig = "src/main/resources/graphs/titan-cassandra-test-spark.properties";
-
-        // add a graph
-        String edgeLabel = "blank";
-        int n = 10;
         TitanGraph titanGraph = TitanFactory.open(titanClusterConfig);
+
+//        //add a tunable size graph
+//        String edgeLabel = "blank";
+//        int n = 10;
 //        Vertex superNode = titanGraph.addVertex(T.label, String.valueOf(0));
 //        for (int i=1;i<n;i++) {
 //            Vertex currentNode = titanGraph.addVertex(T.label, String.valueOf(i));
@@ -225,12 +194,12 @@ public class Degree {
 //        titanGraph.tx().commit();
 
         //count with titan
-//        count = titanGraph.traversal().V().count().next();
-//        System.out.println("The number of vertices in the graph according to gremlin is: "+count);
+        count = titanGraph.traversal().V().count().next();
+        System.out.println("The number of vertices in the graph according to gremlin is: "+count);
 
         // count the graph using titan graph computer
-//        count = titanGraph.traversal(GraphTraversalSource.computer(FulgoraGraphComputer.class)).V().count().next();
-//        System.out.println("The number of vertices in the graph according to fulgora is: "+count);
+        count = titanGraph.traversal(GraphTraversalSource.computer(FulgoraGraphComputer.class)).V().count().next();
+        System.out.println("The number of vertices in the graph according to fulgora is: "+count);
 
 //        // page rank
 //        try {
@@ -292,6 +261,6 @@ public class Degree {
 
         // clear the graph
         titanGraph.close();
-//        TitanCleanup.clear(titanGraph);
+        TitanCleanup.clear(titanGraph);
     }
 }
