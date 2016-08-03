@@ -74,13 +74,18 @@ public class Degree {
         System.out.println("======" + System.currentTimeMillis() + "start load pokemon");
         loadPokemon();
         System.out.println("======" + System.currentTimeMillis() + "stop load pokemon");
+//        System.out.println("======" + System.currentTimeMillis() + "start load SIMPLE");
+//        loadSimple();
+//        System.out.println("======" + System.currentTimeMillis() + "stop load SIMPLE");
 //        System.out.println("======" + System.currentTimeMillis() + "start load icij");
 //        loadICIJ();
 //        System.out.println("======" + System.currentTimeMillis() + "stop load icij");
 
         computeDegree();
 
-        strippedDown();
+//        strippedDown();
+
+        cleanGraph();
     }
 
     private void initialiseGraph() {
@@ -179,19 +184,23 @@ public class Degree {
         }
     }
 
+    private void loadSimple() {
+        TitanGraph titanGraph = TitanFactory.open(titanClusterConfig);
+
+        //add a tunable size graph
+        String edgeLabel = "blank";
+        int n = 10;
+        Vertex superNode = titanGraph.addVertex(T.label, String.valueOf(0));
+        for (int i=1;i<n;i++) {
+            Vertex currentNode = titanGraph.addVertex(T.label, String.valueOf(i));
+            currentNode.addEdge(edgeLabel,superNode);
+        }
+        titanGraph.tx().commit();
+    }
+
     private void strippedDown() {
         Long count;
         TitanGraph titanGraph = TitanFactory.open(titanClusterConfig);
-
-//        //add a tunable size graph
-//        String edgeLabel = "blank";
-//        int n = 10;
-//        Vertex superNode = titanGraph.addVertex(T.label, String.valueOf(0));
-//        for (int i=1;i<n;i++) {
-//            Vertex currentNode = titanGraph.addVertex(T.label, String.valueOf(i));
-//            currentNode.addEdge(edgeLabel,superNode);
-//        }
-//        titanGraph.tx().commit();
 
         //count with titan
         count = titanGraph.traversal().V().count().next();
@@ -259,7 +268,10 @@ public class Degree {
 //            e.printStackTrace();
 //        }
 
-        // clear the graph
+    }
+
+    public void cleanGraph() {
+        TitanGraph titanGraph = TitanFactory.open(titanClusterConfig);
         titanGraph.close();
         TitanCleanup.clear(titanGraph);
     }
