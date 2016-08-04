@@ -71,19 +71,21 @@ public class Degree {
         System.out.println("======" + System.currentTimeMillis() + "start initialise graph");
         initialiseGraph();
         System.out.println("======" + System.currentTimeMillis() + "stop initialise graph");
-        System.out.println("======" + System.currentTimeMillis() + "start load pokemon");
-        loadPokemon();
-        System.out.println("======" + System.currentTimeMillis() + "stop load pokemon");
+//        System.out.println("======" + System.currentTimeMillis() + "start load pokemon");
+//        loadPokemon();
+//        System.out.println("======" + System.currentTimeMillis() + "stop load pokemon");
 //        System.out.println("======" + System.currentTimeMillis() + "start load SIMPLE");
 //        loadSimple();
 //        System.out.println("======" + System.currentTimeMillis() + "stop load SIMPLE");
-//        System.out.println("======" + System.currentTimeMillis() + "start load icij");
-//        loadICIJ();
-//        System.out.println("======" + System.currentTimeMillis() + "stop load icij");
+        System.out.println("======" + System.currentTimeMillis() + "start load icij");
+        loadICIJ();
+        System.out.println("======" + System.currentTimeMillis() + "stop load icij");
 
-        computeDegree();
+//        computeDegree();
 
 //        strippedDown();
+
+        quickCount();
 
         cleanGraph();
     }
@@ -123,10 +125,9 @@ public class Degree {
         CSVSchemaMigrator schemamigrator = new CSVSchemaMigrator(manager);
         CSVDataMigrator datamigrator = new CSVDataMigrator(manager);
 
-        // test a entity
-
-        schemamigrator.migrateSchema("entity", createCSV("/opt/mindmaps/icij-data/Entities.csv"));
-        datamigrator.migrateData("entity", createCSV("/opt/mindmaps/icij-data/Entities.csv"));
+//        // test a entity
+//        schemamigrator.migrateSchema("entity", createCSV("/opt/mindmaps/icij-data/Entities.csv"));
+//        datamigrator.migrateData("entity", createCSV("/opt/mindmaps/icij-data/Entities.csv"));
 
 //        // test an address
 //        schemamigrator.migrateSchema("address", createCSV("/opt/mindmaps/icij-data/Addresses.csv"));
@@ -136,9 +137,9 @@ public class Degree {
 //        schemamigrator.migrateSchema("officer", createCSV("/opt/mindmaps/icij-data/Officers.csv"));
 //        datamigrator.migrateData("officer", createCSV("/opt/mindmaps/icij-data/Officers.csv"));
 //
-//        // test an intermediary
-//        schemamigrator.migrateSchema("intermediary", createCSV("/opt/mindmaps/icij-data/Intermediaries.csv"));
-//        datamigrator.migrateData("intermediary", createCSV("/opt/mindmaps/icij-data/Intermediaries.csv"));
+        // test an intermediary
+        schemamigrator.migrateSchema("intermediary", createCSV("/opt/mindmaps/icij-data/Intermediaries.csv"));
+        datamigrator.migrateData("intermediary", createCSV("/opt/mindmaps/icij-data/Intermediaries.csv"));
 
         try {
             transaction.commit();
@@ -274,5 +275,17 @@ public class Degree {
         TitanGraph titanGraph = TitanFactory.open(titanClusterConfig);
         titanGraph.close();
         TitanCleanup.clear(titanGraph);
+    }
+
+    public void quickCount() {
+        Graph graph = GraphFactory.open(sparkClusterConfig);
+        try {
+            ComputerResult result = graph.compute(SparkGraphComputer.class).mapReduce(new CountMapReduce()).submit().get();
+            System.out.println("The count via map reduce is: "+result.memory().get(CountMapReduce.DEFAULT_KEY));
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        } catch (ExecutionException e) {
+            e.printStackTrace();
+        }
     }
 }
